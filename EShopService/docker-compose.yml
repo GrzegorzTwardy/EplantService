@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  eshopservice:
+    image: eshopservice:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=eshopdb;Username=postgres;Password=postgres
+    depends_on:
+      - postgres
+    networks:
+      - eshop-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    env_file: dockerconfig/postgres/postgres.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./dockerconfig/postgres/init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - eshop-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pg-admin:
+    image:
+      dpage/pgadmin4:7.6
+    env_file: dockerconfig/pgadmin/pg-admin.env
+    restart: always
+    networks:
+      - eshop-network
+    ports:
+      - "8083:80"
+    volumes:
+      - pg-admin:/var/lib/pgadmin
+
+
+networks:
+  eshop-network:
+    driver: bridge
+
+volumes:
+  postgres:
+    external: false
+  pg-admin:
+    external: false
