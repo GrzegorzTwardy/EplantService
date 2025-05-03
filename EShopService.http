@@ -1,0 +1,74 @@
+@EShopService_HostAddress = http://localhost:8080
+#@EShopService_HostAddress = http://localhost:5052
+
+### Test valid Visa card
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+"4532015112830366"
+
+### Test valid MasterCard
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+"5555555555554444"
+
+### Test valid American Express card
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+"378282246310005"
+
+### Test valid card with spaces and dashes (formatting)
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+"4532-0151-1283-0366"
+
+### Test card with invalid checksum (should fail ValidateCard)
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+"4532015112830367"
+
+### Test card number that's too short (should return 400)
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+"41111111"
+
+### Test card number that's too long (should return 414)
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+"41111111111111111111111111111111111"
+
+### Test card with non-numeric characters (should return 400)
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+"4111111111111111A"
+
+### Test empty card number (should return 400)
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+""
+
+### Test unsupported card type (JCB - not in CreditCardProvider enum, should return 406)
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+"3530111333300000"
+
+### Test unsupported card type (Discover - not in CreditCardProvider enum, should return 406)
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+"6011111111111117"
+
+### Test card with an unknown/invalid format (should return 400)
+POST {{EShopService_HostAddress}}/api/CardValidation
+Content-Type: application/json
+
+"9999888877776666"
