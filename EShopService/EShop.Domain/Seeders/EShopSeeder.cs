@@ -24,7 +24,7 @@ namespace EShop.Domain.Seeders
                 var category = await context.Categories
                         .Where(x => x.Name == "Rosliny").FirstOrDefaultAsync();
 
-                var products = new List<Product>
+                var products = new List<Plant>
                 {
                     new Plant { Name = "Aloes", Sku = "5900000000001", Price = 19.99m, Stock = 20, Color = "Zielony", EstimatedHeight = 30, Category = PredefinedCategories.Indoor },
                     new Plant { Name = "Kaktus", Sku = "5900000000002", Price = 14.99m, Stock = 50, Color = "Zielony", EstimatedHeight = 15, Category = PredefinedCategories.IndoorOutdoor },
