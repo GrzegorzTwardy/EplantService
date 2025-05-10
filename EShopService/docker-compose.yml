@@ -1,0 +1,39 @@
+services:
+  eshopservice:
+    image: ${DOCKER_REGISTRY-}eshopservice
+    depends_on:
+      - db
+    environment:
+      - CONNECTION_STRING=Server=${DB_HOST};Database=${DB_NAME};User Id=${DB_USER};Password=${SA_PASSWORD};Encrypt=False;TrustServerCertificate=True;
+    build:
+      context: .
+      dockerfile: EShopService/Dockerfile
+
+  userservice:
+    image: ${DOCKER_REGISTRY-}userservice
+    depends_on:
+      - db
+    environment:
+      - CONNECTION_STRING=Server=${DB_HOST};Database=${DB_NAME};User Id=${DB_USER};Password=${SA_PASSWORD};Encrypt=False;TrustServerCertificate=True;
+    build:
+      context: .
+      dockerfile: UserService/Dockerfile
+      
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "${SA_PASSWORD}"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  mssql_data:
