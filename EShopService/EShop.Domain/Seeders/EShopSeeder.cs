@@ -12,7 +12,7 @@ namespace EShop.Domain.Seeders
             {
                 var categories = new List<Category>
                 {
-                    new Category { Name = "Klocki" },
+                    new Category { Name = "Rosliny" },
                 };
 
                 context.Categories.AddRange(categories);
@@ -21,13 +21,13 @@ namespace EShop.Domain.Seeders
             if (!context.Products.Any())
             {
                 var category = await context.Categories
-                        .Where(x => x.Name == "Klocki").FirstOrDefaultAsync();
+                        .Where(x => x.Name == "Rosliny").FirstOrDefaultAsync();
 
                 var products = new List<Product>
                 {
-                    new Product { Name = "Cobi", Ean = "1234", Category = category },
-                    new Product { Name = "Duplo", Ean = "431", Category = category },
-                    new Product { Name = "Lego", Ean = "12212", Category = category }
+                    new Product { Name = "Kaktus", Sku = "8559921040708", Category = category },
+                    new Product { Name = "Bratek", Sku = "5903837350117", Category = category },
+                    new Product { Name = "Chryzantema", Sku = "5907671252200", Category = category }
                 };
 
                 context.Products.AddRange(products);

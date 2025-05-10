@@ -61,7 +61,6 @@ namespace EShopService
                 await seeder.Seed();
             }
 
-
             app.Run();
         }
     }
