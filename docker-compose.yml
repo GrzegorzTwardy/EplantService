@@ -11,9 +11,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=eshopdb;Username=postgres;Password=postgres
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - eshop-network
     restart: unless-stopped
@@ -26,12 +26,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres:/var/lib/postgresql/data
-      - ./dockerconfig/postgres/init-scripts:/docker-entrypoint-initdb.d
     networks:
       - eshop-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5

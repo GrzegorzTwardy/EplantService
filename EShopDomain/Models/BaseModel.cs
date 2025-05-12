@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EShopService.Models;
+namespace EShopDomain.Models;
 
 public class BaseModel
 {
-    [Required] public int Id { get; set; }
+    [Key] public int Id { get; set; }
 
-    public string Name { get; set; } = string.Empty;
+    [Required] [MaxLength(255)] public string Name { get; set; } = string.Empty;
 
     public bool Deleted { get; set; } = false;
 

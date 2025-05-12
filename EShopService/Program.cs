@@ -1,9 +1,27 @@
+using EShopApplication;
+using EShopDomain.Repositories;
+using EShopDomain.seeders;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Add database context with hardcoded connection string
+builder.Services.AddDbContext<DataContext>(options =>
+    options.UseNpgsql("Host=postgres;Database=eshop;Username=admin;Password=admin"));
+
+// Register repositories
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+// Register services
+builder.Services.AddScoped<IProductService, ProductService>();
+
+// Register seeder
+builder.Services.AddScoped<IEShopSeeder, EShopSeeder>();
+
+// Add Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -14,10 +32,19 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
 
-// uncomment this line if you want to setup https
-// app.UseHttpsRedirection();
+    // Ensure database is created before seeding
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+        // Ensure database is created
+        dbContext.Database.EnsureCreated();
+
+        // Seed the database
+        var seeder = scope.ServiceProvider.GetRequiredService<IEShopSeeder>();
+        seeder.Seed();
+    }
+}
 
 app.UseAuthorization();
 

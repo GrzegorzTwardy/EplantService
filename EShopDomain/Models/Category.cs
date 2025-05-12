@@ -1,4 +1,4 @@
-﻿namespace EShopService.Models;
+﻿namespace EShopDomain.Models;
 
 public class Category : BaseModel
 {

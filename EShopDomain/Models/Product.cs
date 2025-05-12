@@ -1,4 +1,4 @@
-﻿namespace EShopService.Models;
+﻿namespace EShopDomain.Models;
 
 public class Product : BaseModel
 {
@@ -10,5 +10,7 @@ public class Product : BaseModel
 
     public string Sku { get; set; } = string.Empty;
 
-    public Category Category { get; set; } = default!;
+    public int CategoryId { get; set; }
+
+    public Category? Category { get; set; }
 }
