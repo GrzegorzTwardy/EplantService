@@ -41,16 +41,18 @@ public class ProductController : ControllerBase
 
     // PUT api/Product/5
     [HttpPut("{id}")]
-    public void Put(int id, [FromBody] Product product)
+    public IActionResult Put(int id, [FromBody] Product product)
     {
         product.Id = id;
         _productService.UpdateProduct(product);
+        return NoContent();
     }
 
     // DELETE api/Product/5
     [HttpDelete("{id}")]
-    public void Delete(int id)
+    public IActionResult Delete(int id)
     {
         _productService.DeleteProduct(id);
+        return NoContent();
     }
 }

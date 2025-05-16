@@ -3,7 +3,7 @@
 public enum CreditCardProvider
 {
     Visa,
-    Mastercard,
+    MasterCard,
     AmericanExpress
 }
 

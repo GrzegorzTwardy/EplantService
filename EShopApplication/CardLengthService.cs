@@ -2,7 +2,12 @@ using EShopDomain.exceptions;
 
 namespace EShopApplication;
 
-public class CardLengthService
+public interface ICardLengthService
+{
+    void ValidateCardLength(string cardNumber);
+}
+
+public class CardLengthService : ICardLengthService
 {
     private const int MinLength = 13;
     private const int MaxLength = 19;

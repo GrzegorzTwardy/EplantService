@@ -16,10 +16,10 @@ public class CreditCardProviderExtensionsTests
     }
 
     [Theory]
-    [InlineData("Mastercard", CreditCardProvider.Mastercard)]
-    [InlineData("mastercard", CreditCardProvider.Mastercard)]
-    [InlineData("MASTERCARD", CreditCardProvider.Mastercard)]
-    [InlineData("MaStErCaRd", CreditCardProvider.Mastercard)]
+    [InlineData("Mastercard", CreditCardProvider.MasterCard)]
+    [InlineData("mastercard", CreditCardProvider.MasterCard)]
+    [InlineData("MASTERCARD", CreditCardProvider.MasterCard)]
+    [InlineData("MaStErCaRd", CreditCardProvider.MasterCard)]
     public void FromString_WhenMastercardVariations_ReturnsMastercardEnum(string input, CreditCardProvider expected)
     {
         var result = CreditCardProviderExtensions.FromString(input);

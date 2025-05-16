@@ -9,8 +9,15 @@ namespace EShopService.Controllers;
 [ApiController]
 public class CardValidationController : ControllerBase
 {
-    private readonly CardLengthService _cardLengthService = new();
-    private readonly CardService _cardService = new();
+    private readonly ICardLengthService _cardLengthService;
+    private readonly ICardService _cardService;
+
+    // services injected by framework
+    public CardValidationController(ICardLengthService cardLengthService, ICardService cardService)
+    {
+        _cardLengthService = cardLengthService;
+        _cardService = cardService;
+    }
 
     /// <summary>
     ///     Validates a credit card number

@@ -2,7 +2,13 @@
 
 namespace EShopApplication;
 
-public class CardService
+public interface ICardService
+{
+    bool ValidateCard(string cardNumber);
+    string GetCardType(string cardNumber);
+}
+
+public class CardService : ICardService
 {
     public bool ValidateCard(string cardNumber)
     {
