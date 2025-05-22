@@ -5,12 +5,12 @@ namespace EShopDomain.Repositories;
 
 public interface IProductRepository
 {
-    IEnumerable<Product> GetAll();
-    Product? GetById(int id);
-    void Add(Product product);
-    void Update(Product product);
-    void Delete(int id);
-    bool Exists(int id);
+    Task<IEnumerable<Product>> GetAllAsync();
+    Task<Product?> GetByIdAsync(int id);
+    Task AddAsync(Product product);
+    Task UpdateAsync(Product product);
+    Task DeleteAsync(int id);
+    Task<bool> ExistsAsync(int id);
 }
 
 public class ProductRepository : IProductRepository
@@ -22,31 +22,31 @@ public class ProductRepository : IProductRepository
         _context = context;
     }
 
-    public IEnumerable<Product> GetAll()
+    public async Task<IEnumerable<Product>> GetAllAsync()
     {
-        return _context.Products.Include(p => p.Category).ToList();
+        return await _context.Products.Include(p => p.Category).ToListAsync();
     }
 
-    public Product? GetById(int id)
+    public async Task<Product?> GetByIdAsync(int id)
     {
-        return _context.Products.Include(p => p.Category).FirstOrDefault(p => p.Id == id);
+        return await _context.Products.Include(p => p.Category).FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public void Add(Product product)
+    public async Task AddAsync(Product product)
     {
         _context.Products.Add(product);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
-    public void Update(Product product)
+    public async Task UpdateAsync(Product product)
     {
-        var existingProduct = _context.Products.Find(product.Id);
+        var existingProduct = await _context.Products.FindAsync(product.Id);
         if (existingProduct == null) throw new KeyNotFoundException($"Product with ID {product.Id} not found");
 
         // Check if the category exists if CategoryId is being changed
         if (product.CategoryId != existingProduct.CategoryId)
         {
-            var categoryExists = _context.Categories.Any(c => c.Id == product.CategoryId);
+            var categoryExists = await _context.Categories.AnyAsync(c => c.Id == product.CategoryId);
             if (!categoryExists) throw new KeyNotFoundException($"Category with ID {product.CategoryId} not found");
         }
 
@@ -57,21 +57,21 @@ public class ProductRepository : IProductRepository
             // Remove reference to old Category object
             existingProduct.Category = null;
 
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
-    public void Delete(int id)
+    public async Task DeleteAsync(int id)
     {
-        var product = _context.Products.Find(id);
+        var product = await _context.Products.FindAsync(id);
         if (product != null)
         {
             product.Deleted = true;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 
-    public bool Exists(int id)
+    public async Task<bool> ExistsAsync(int id)
     {
-        return _context.Products.Any(p => p.Id == id);
+        return await _context.Products.AnyAsync(p => p.Id == id);
     }
 }

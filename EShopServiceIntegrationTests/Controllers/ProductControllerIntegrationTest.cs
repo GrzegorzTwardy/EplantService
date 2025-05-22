@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit.Abstractions;
 
 namespace EShopServiceIntegrationTests.Controllers;
 
@@ -15,9 +17,11 @@ public class ProductControllerIntegrationTest : IClassFixture<WebApplicationFact
 {
     private readonly HttpClient _client;
     private readonly WebApplicationFactory<Program> _factory;
+    private readonly ITestOutputHelper _testOutputHelper;
 
-    public ProductControllerIntegrationTest(WebApplicationFactory<Program> factory)
+    public ProductControllerIntegrationTest(WebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
+        _testOutputHelper = testOutputHelper;
         _factory = factory
             .WithWebHostBuilder(builder =>
             {
@@ -36,6 +40,195 @@ public class ProductControllerIntegrationTest : IClassFixture<WebApplicationFact
             });
 
         _client = _factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task Add_AddProduct_ExceptedOneProduct()
+    {
+        // Arrange
+        var category = await SeedCategory();
+        var newProduct = new Product
+        {
+            Name = "PATCH Test Product",
+            Ean = "1111222233334",
+            Price = 49.99m,
+            Stock = 75,
+            Sku = "PATCH-001",
+            CategoryId = category.Id
+        };
+
+        // Act
+        var response = await PatchProductRequest(newProduct);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var createdProduct = JsonSerializer.Deserialize<JsonElement>(responseContent);
+
+        Assert.True(createdProduct.TryGetProperty("id", out var id));
+        Assert.True(id.GetInt32() > 0);
+        Assert.True(createdProduct.TryGetProperty("name", out var name));
+        Assert.Equal("PATCH Test Product", name.GetString());
+
+        // Verify Location header is set
+        Assert.NotNull(response.Headers.Location);
+
+        // Verify the product was actually added to the database
+        var getAllResponse = await GetAllProductsRequest();
+        var allProductsContent = await getAllResponse.Content.ReadAsStringAsync();
+        var allProducts = JsonSerializer.Deserialize<List<JsonElement>>(allProductsContent);
+
+        Assert.NotNull(allProducts);
+        Assert.Single(allProducts);
+
+        var addedProduct = allProducts[0];
+        Assert.True(addedProduct.TryGetProperty("name", out var addedName));
+        Assert.Equal("PATCH Test Product", addedName.GetString());
+        Assert.True(addedProduct.TryGetProperty("sku", out var addedSku));
+        Assert.Equal("PATCH-001", addedSku.GetString());
+    }
+
+    private async Task<HttpResponseMessage> PatchProductRequest(Product product)
+    {
+        var json = JsonSerializer.Serialize(product, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        return await _client.PatchAsync("/api/product", content);
+    }
+
+    [Fact]
+    public async Task Post_AddThousandsProductsAsync_ExceptedThousandsProducts()
+    {
+        //  Total time: 745 ms (0.75 seconds)
+        // Arrange
+        var category = await SeedCategory();
+        const int productCount = 10000;
+        const int batchSize = 100; // Process in batches to avoid overwhelming the database
+        var stopwatch = Stopwatch.StartNew();
+
+        _testOutputHelper.WriteLine(
+            $"Starting ASYNC CONCURRENT test - Adding {productCount} products using List<Task>...");
+
+        // Act - Using List<Task> for concurrent operations
+        var totalProcessed = 0;
+
+        for (var batchStart = 1; batchStart <= productCount; batchStart += batchSize)
+        {
+            var tasks = new List<Task>();
+            var currentBatchEnd = Math.Min(batchStart + batchSize - 1, productCount);
+
+            for (var i = batchStart; i <= currentBatchEnd; i++)
+            {
+                var productIndex = i; // Capture loop variable
+
+                var task = Task.Run(async () =>
+                {
+                    var product = new Product
+                    {
+                        Name = $"Async Concurrent Product {productIndex}",
+                        Ean = $"{1000000000000 + productIndex:D13}",
+                        Price = 19.99m + productIndex % 100,
+                        Stock = 100 + productIndex % 50,
+                        Sku = $"ASYNC-CONC-{productIndex:D5}",
+                        CategoryId = category.Id
+                    };
+
+                    var response = await PostProductRequest(product);
+                    if (response.StatusCode != HttpStatusCode.Created)
+                        _testOutputHelper.WriteLine($"Failed to create product {productIndex}: {response.StatusCode}");
+                });
+
+                tasks.Add(task);
+            }
+
+            // Wait for all tasks in this batch to complete
+            await Task.WhenAll(tasks);
+
+            totalProcessed = currentBatchEnd;
+            _testOutputHelper.WriteLine(
+                $"ASYNC CONCURRENT: Completed batch ending at {currentBatchEnd} ({stopwatch.ElapsedMilliseconds}ms elapsed)");
+        }
+
+        stopwatch.Stop();
+
+        // Assert
+        var getAllResponse = await GetAllProductsRequest();
+        Assert.Equal(HttpStatusCode.OK, getAllResponse.StatusCode);
+
+        var responseContent = await getAllResponse.Content.ReadAsStringAsync();
+        var products = JsonSerializer.Deserialize<List<JsonElement>>(responseContent);
+
+        Assert.NotNull(products);
+        Assert.True(products.Count >= productCount,
+            $"Expected at least {productCount} products, but found {products.Count}");
+
+        // Print performance results
+        _testOutputHelper.WriteLine("ASYNC CONCURRENT TEST COMPLETED:");
+        _testOutputHelper.WriteLine($"  Products added: {productCount}");
+        _testOutputHelper.WriteLine($"  Batch size: {batchSize}");
+        _testOutputHelper.WriteLine(
+            $"  Total time: {stopwatch.ElapsedMilliseconds} ms ({stopwatch.Elapsed.TotalSeconds:F2} seconds)");
+        _testOutputHelper.WriteLine(
+            $"  Average time per product: {(double)stopwatch.ElapsedMilliseconds / productCount:F2} ms");
+        _testOutputHelper.WriteLine($"  Products per second: {productCount / stopwatch.Elapsed.TotalSeconds:F2}");
+    }
+
+    [Fact]
+    public void Post_AddThousandsProducts_ExceptedThousandsProducts()
+    {
+        // Total time: 6112 ms (6.11 seconds)
+        // Arrange
+        var category = SeedCategory().GetAwaiter().GetResult();
+        const int productCount = 10000;
+        var stopwatch = Stopwatch.StartNew();
+
+        _testOutputHelper.WriteLine($"Starting PURE SYNC test - Adding {productCount} products sequentially...");
+
+        // Act - Pure synchronous, sequential operations
+        for (var i = 1; i <= productCount; i++)
+        {
+            var product = new Product
+            {
+                Name = $"Pure Sync Product {i}",
+                Ean = $"{3000000000000 + i:D13}",
+                Price = 39.99m + i % 100,
+                Stock = 300 + i % 50,
+                Sku = $"PURE-SYNC-{i:D5}",
+                CategoryId = category.Id
+            };
+
+            var response = PostProductRequest(product).GetAwaiter().GetResult();
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+            if (i % 1000 == 0)
+                _testOutputHelper.WriteLine(
+                    $"PURE SYNC: Added {i} products so far... ({stopwatch.ElapsedMilliseconds}ms elapsed)");
+        }
+
+        stopwatch.Stop();
+
+        // Assert
+        var getAllResponse = GetAllProductsRequest().GetAwaiter().GetResult();
+        Assert.Equal(HttpStatusCode.OK, getAllResponse.StatusCode);
+
+        var responseContent = getAllResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+        var products = JsonSerializer.Deserialize<List<JsonElement>>(responseContent);
+
+        Assert.NotNull(products);
+        Assert.True(products.Count >= productCount,
+            $"Expected at least {productCount} products, but found {products.Count}");
+
+        // Print performance results
+        _testOutputHelper.WriteLine("PURE SYNC TEST COMPLETED:");
+        _testOutputHelper.WriteLine($"  Products added: {productCount}");
+        _testOutputHelper.WriteLine(
+            $"  Total time: {stopwatch.ElapsedMilliseconds} ms ({stopwatch.Elapsed.TotalSeconds:F2} seconds)");
+        _testOutputHelper.WriteLine(
+            $"  Average time per product: {(double)stopwatch.ElapsedMilliseconds / productCount:F2} ms");
+        _testOutputHelper.WriteLine($"  Products per second: {productCount / stopwatch.Elapsed.TotalSeconds:F2}");
     }
 
     private async Task<HttpResponseMessage> GetAllProductsRequest()

@@ -17,42 +17,50 @@ public class ProductController : ControllerBase
 
     // GET: api/Product
     [HttpGet]
-    public IEnumerable<Product> Get()
+    public async Task<IEnumerable<Product>> GetAllAsync()
     {
-        return _productService.GetAllProducts();
+        return await _productService.GetAllProductsAsync();
     }
 
     // GET api/Product/5
     [HttpGet("{id}")]
-    public ActionResult<Product> Get(int id)
+    public async Task<ActionResult<Product>> GetAsync(int id)
     {
-        var product = _productService.GetProductById(id);
+        var product = await _productService.GetProductByIdAsync(id);
         if (product == null) return NotFound();
         return product;
     }
 
     // POST api/Product
     [HttpPost]
-    public ActionResult<Product> Post([FromBody] Product product)
+    public async Task<ActionResult<Product>> PostAsync([FromBody] Product product)
     {
-        _productService.CreateProduct(product);
-        return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
+        await _productService.CreateProductAsync(product);
+        return Created($"/api/Product/{product.Id}", product);
+    }
+
+    // PATCH api/Product
+    [HttpPatch]
+    public ActionResult<Product> Add([FromBody] Product product)
+    {
+        _productService.Add(product);
+        return Created($"/api/Product/{product.Id}", product);
     }
 
     // PUT api/Product/5
     [HttpPut("{id}")]
-    public IActionResult Put(int id, [FromBody] Product product)
+    public async Task<IActionResult> PutAsync(int id, [FromBody] Product product)
     {
         product.Id = id;
-        _productService.UpdateProduct(product);
+        await _productService.UpdateProductAsync(product);
         return NoContent();
     }
 
     // DELETE api/Product/5
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> DeleteAsync(int id)
     {
-        _productService.DeleteProduct(id);
+        await _productService.DeleteProductAsync(id);
         return NoContent();
     }
 }

@@ -5,11 +5,12 @@ namespace EShopApplication;
 
 public interface IProductService
 {
-    IEnumerable<Product> GetAllProducts();
-    Product? GetProductById(int id);
-    void CreateProduct(Product product);
-    bool UpdateProduct(Product product);
-    bool DeleteProduct(int id);
+    Task<IEnumerable<Product>> GetAllProductsAsync();
+    Task<Product?> GetProductByIdAsync(int id);
+    Task CreateProductAsync(Product product);
+    void Add(Product product);
+    Task<bool> UpdateProductAsync(Product product);
+    Task<bool> DeleteProductAsync(int id);
 }
 
 public class ProductService : IProductService
@@ -21,17 +22,17 @@ public class ProductService : IProductService
         _productRepository = productRepository;
     }
 
-    public IEnumerable<Product> GetAllProducts()
+    public async Task<IEnumerable<Product>> GetAllProductsAsync()
     {
-        return _productRepository.GetAll();
+        return await _productRepository.GetAllAsync();
     }
 
-    public Product? GetProductById(int id)
+    public async Task<Product?> GetProductByIdAsync(int id)
     {
-        return _productRepository.GetById(id);
+        return await _productRepository.GetByIdAsync(id);
     }
 
-    public void CreateProduct(Product product)
+    public async Task CreateProductAsync(Product product)
     {
         // Set default values for audit fields
         product.CreatedAt = DateTime.UtcNow;
@@ -39,12 +40,24 @@ public class ProductService : IProductService
         product.CreatedBy = Guid.NewGuid();
         product.UpdatedBy = Guid.NewGuid();
 
-        _productRepository.Add(product);
+        await _productRepository.AddAsync(product);
     }
 
-    public bool UpdateProduct(Product product)
+    public void Add(Product product)
     {
-        var existingProduct = _productRepository.GetById(product.Id);
+        // Set default values for audit fields
+        product.CreatedAt = DateTime.UtcNow;
+        product.UpdatedAt = DateTime.UtcNow;
+        product.CreatedBy = Guid.NewGuid();
+        product.UpdatedBy = Guid.NewGuid();
+
+        // Use GetAwaiter().GetResult() to make async call synchronous
+        _productRepository.AddAsync(product).GetAwaiter().GetResult();
+    }
+
+    public async Task<bool> UpdateProductAsync(Product product)
+    {
+        var existingProduct = await _productRepository.GetByIdAsync(product.Id);
         if (existingProduct == null)
             return false;
 
@@ -54,16 +67,16 @@ public class ProductService : IProductService
         product.CreatedAt = existingProduct.CreatedAt;
         product.CreatedBy = existingProduct.CreatedBy;
 
-        _productRepository.Update(product);
+        await _productRepository.UpdateAsync(product);
         return true;
     }
 
-    public bool DeleteProduct(int id)
+    public async Task<bool> DeleteProductAsync(int id)
     {
-        if (!_productRepository.Exists(id))
+        if (!await _productRepository.ExistsAsync(id))
             return false;
 
-        _productRepository.Delete(id);
+        await _productRepository.DeleteAsync(id);
         return true;
     }
 }

@@ -18,7 +18,7 @@ public class ProductControllerTest
     }
 
     [Fact]
-    public void Get_ReturnsAllProducts()
+    public async Task GetAsync_ReturnsAllProducts()
     {
         // Arrange
         var expectedProducts = new List<Product>
@@ -26,10 +26,10 @@ public class ProductControllerTest
             new() { Id = 1, Name = "Product 1", Price = 10.99m, Stock = 100 },
             new() { Id = 2, Name = "Product 2", Price = 15.99m, Stock = 50 }
         };
-        _mockProductService.Setup(x => x.GetAllProducts()).Returns(expectedProducts);
+        _mockProductService.Setup(x => x.GetAllProductsAsync()).ReturnsAsync(expectedProducts);
 
         // Act
-        var result = _controller.Get();
+        var result = await _controller.GetAllAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -38,14 +38,14 @@ public class ProductControllerTest
     }
 
     [Fact]
-    public void Get_ReturnsEmptyList_WhenNoProducts()
+    public async Task GetAsync_ReturnsEmptyList_WhenNoProducts()
     {
         // Arrange
         var expectedProducts = new List<Product>();
-        _mockProductService.Setup(x => x.GetAllProducts()).Returns(expectedProducts);
+        _mockProductService.Setup(x => x.GetAllProductsAsync()).ReturnsAsync(expectedProducts);
 
         // Act
-        var result = _controller.Get();
+        var result = await _controller.GetAllAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -53,15 +53,15 @@ public class ProductControllerTest
     }
 
     [Fact]
-    public void Get_WithValidId_ReturnsProduct()
+    public async Task GetAsync_WithValidId_ReturnsProduct()
     {
         // Arrange
         var productId = 1;
         var expectedProduct = new Product { Id = productId, Name = "Test Product", Price = 19.99m, Stock = 25 };
-        _mockProductService.Setup(x => x.GetProductById(productId)).Returns(expectedProduct);
+        _mockProductService.Setup(x => x.GetProductByIdAsync(productId)).ReturnsAsync(expectedProduct);
 
         // Act
-        var result = _controller.Get(productId);
+        var result = await _controller.GetAsync(productId);
 
         // Assert
         Assert.NotNull(result.Value);
@@ -69,14 +69,14 @@ public class ProductControllerTest
     }
 
     [Fact]
-    public void Get_WithInvalidId_ReturnsNotFound()
+    public async Task GetAsync_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
         var productId = 999;
-        _mockProductService.Setup(x => x.GetProductById(productId)).Returns((Product)null);
+        _mockProductService.Setup(x => x.GetProductByIdAsync(productId)).ReturnsAsync((Product)null);
 
         // Act
-        var result = _controller.Get(productId);
+        var result = await _controller.GetAsync(productId);
 
         // Assert
         var notFoundResult = result.Result as NotFoundResult;
@@ -86,7 +86,7 @@ public class ProductControllerTest
     }
 
     [Fact]
-    public void Post_WithValidProduct_ReturnsCreatedAtAction()
+    public async Task PostAsync_WithValidProduct_ReturnsCreatedAtAction()
     {
         // Arrange
         var newProduct = new Product
@@ -98,21 +98,23 @@ public class ProductControllerTest
             Ean = "1234567890123"
         };
 
-        _mockProductService.Setup(x => x.CreateProduct(It.IsAny<Product>()))
-            .Callback<Product>(p => p.Id = 1);
+        _mockProductService.Setup(x => x.CreateProductAsync(It.IsAny<Product>()))
+            .Callback<Product>(p => p.Id = 1)
+            .Returns(Task.CompletedTask);
 
         // Act
-        var result = _controller.Post(newProduct);
+        var result = await _controller.PostAsync(newProduct);
 
         // Assert
-        var createdAtActionResult = result.Result as CreatedAtActionResult;
-        Assert.NotNull(createdAtActionResult);
-        Assert.Equal(201, createdAtActionResult.StatusCode);
-        Assert.Equal(nameof(_controller.Get), createdAtActionResult.ActionName);
+        var createdResult = result.Result as CreatedResult;
+        Assert.NotNull(createdResult);
+        Assert.Equal(201, createdResult.StatusCode);
+        Assert.Equal("/api/Product/1", createdResult.Location);
+        Assert.Equal(newProduct, createdResult.Value);
     }
 
     [Fact]
-    public void Put_WithValidProduct_SetsIdAndCallsUpdate()
+    public async Task PutAsync_WithValidProduct_SetsIdAndCallsUpdate()
     {
         // Arrange
         var productId = 1;
@@ -124,38 +126,41 @@ public class ProductControllerTest
             Stock = 30
         };
 
+        _mockProductService.Setup(x => x.UpdateProductAsync(It.IsAny<Product>())).ReturnsAsync(true);
+
         // Act
-        _controller.Put(productId, updatedProduct);
+        await _controller.PutAsync(productId, updatedProduct);
 
         // Assert
         Assert.Equal(productId, updatedProduct.Id);
-        _mockProductService.Verify(x => x.UpdateProduct(updatedProduct), Times.Once);
+        _mockProductService.Verify(x => x.UpdateProductAsync(updatedProduct), Times.Once);
     }
 
     [Fact]
-    public void Delete_WithValidId_CallsDeleteProduct()
+    public async Task DeleteAsync_WithValidId_CallsDeleteProduct()
     {
         // Arrange
         var productId = 1;
+        _mockProductService.Setup(x => x.DeleteProductAsync(productId)).ReturnsAsync(true);
 
         // Act
-        _controller.Delete(productId);
+        await _controller.DeleteAsync(productId);
 
         // Assert
-        _mockProductService.Verify(x => x.DeleteProduct(productId), Times.Once);
+        _mockProductService.Verify(x => x.DeleteProductAsync(productId), Times.Once);
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
     [InlineData(999)]
-    public void Get_WithInvalidIds_ReturnsNotFound(int invalidId)
+    public async Task GetAsync_WithInvalidIds_ReturnsNotFound(int invalidId)
     {
         // Arrange
-        _mockProductService.Setup(x => x.GetProductById(invalidId)).Returns((Product)null);
+        _mockProductService.Setup(x => x.GetProductByIdAsync(invalidId)).ReturnsAsync((Product)null);
 
         // Act
-        var result = _controller.Get(invalidId);
+        var result = await _controller.GetAsync(invalidId);
 
         // Assert
         var notFoundResult = result.Result as NotFoundResult;
@@ -167,7 +172,7 @@ public class ProductControllerTest
     [InlineData(1)]
     [InlineData(50)]
     [InlineData(999)]
-    public void Put_WithVariousIds_SetsCorrectId(int productId)
+    public async Task PutAsync_WithVariousIds_SetsCorrectId(int productId)
     {
         // Arrange
         var updatedProduct = new Product
@@ -178,24 +183,29 @@ public class ProductControllerTest
             Stock = 10
         };
 
+        _mockProductService.Setup(x => x.UpdateProductAsync(It.IsAny<Product>())).ReturnsAsync(true);
+
         // Act
-        _controller.Put(productId, updatedProduct);
+        await _controller.PutAsync(productId, updatedProduct);
 
         // Assert
         Assert.Equal(productId, updatedProduct.Id);
-        _mockProductService.Verify(x => x.UpdateProduct(updatedProduct), Times.Once);
+        _mockProductService.Verify(x => x.UpdateProductAsync(updatedProduct), Times.Once);
     }
 
     [Theory]
     [InlineData(1)]
     [InlineData(100)]
     [InlineData(-1)]
-    public void Delete_WithVariousIds_CallsDeleteProduct(int productId)
+    public async Task DeleteAsync_WithVariousIds_CallsDeleteProduct(int productId)
     {
-        // Arrange & Act
-        _controller.Delete(productId);
+        // Arrange
+        _mockProductService.Setup(x => x.DeleteProductAsync(productId)).ReturnsAsync(true);
+
+        // Act & Assert
+        await _controller.DeleteAsync(productId);
 
         // Assert
-        _mockProductService.Verify(x => x.DeleteProduct(productId), Times.Once);
+        _mockProductService.Verify(x => x.DeleteProductAsync(productId), Times.Once);
     }
 }
