@@ -1,11 +1,24 @@
 version: '3.8'
 
 services:
+  userservice:
+    image: userservice:latest
+    ports:
+      - "8081:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - eshop-network
+    restart: unless-stopped
+  
   eshopservice:
     image: eshopservice:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
@@ -13,6 +26,8 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - eshop-network
@@ -35,6 +50,22 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - eshop-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - redis:/data
+
   pg-admin:
     image:
       dpage/pgadmin4:7.6
@@ -56,4 +87,6 @@ volumes:
   postgres:
     external: false
   pg-admin:
+    external: false
+  redis:
     external: false

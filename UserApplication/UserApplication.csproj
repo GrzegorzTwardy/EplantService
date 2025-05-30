@@ -7,11 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\EShopDomain\EShopDomain.csproj"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.16"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="StackExchange.Redis" Version="2.8.37"/>
+        <ProjectReference Include="..\UserDomain\UserDomain.csproj"/>
     </ItemGroup>
-
 </Project>

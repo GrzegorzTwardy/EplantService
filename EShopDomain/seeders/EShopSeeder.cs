@@ -1,5 +1,7 @@
 using EShopDomain.Models;
 using EShopDomain.Repositories;
+using UserDomain.enums;
+using UserDomain.Models;
 
 namespace EShopDomain.seeders;
 
@@ -21,9 +23,34 @@ public class EShopSeeder : IEShopSeeder
     {
         // Seed categories if they don't exist
         if (!_context.Categories.Any()) SeedCategories();
-
         // Seed products if they don't exist
         if (!_context.Products.Any()) SeedProducts();
+        if (!_context.Users.Any()) SeedUsers();
+    }
+
+    private void SeedUsers()
+    {
+        var users = new List<User>
+        {
+            new()
+            {
+                CreatedBy = Guid.NewGuid(), UpdatedBy = Guid.NewGuid(), Username = "ala",
+                Password = "ala", Role = UserRole.Admin
+            },
+            new()
+            {
+                CreatedBy = Guid.NewGuid(), UpdatedBy = Guid.NewGuid(), Username = "ma", Password = "ma",
+                Role = UserRole.Employee
+            },
+            new()
+            {
+                CreatedBy = Guid.NewGuid(), UpdatedBy = Guid.NewGuid(), Username = "kota",
+                Password = "kota", Role = UserRole.Client
+            }
+        };
+
+        _context.Users.AddRange(users);
+        _context.SaveChanges();
     }
 
     private void SeedCategories()

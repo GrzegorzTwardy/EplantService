@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using EShopApplication;
+using EShopApplicationTests;
 using EShopDomain.Models;
 using EShopDomain.Repositories;
 using EShopService;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 using Xunit.Abstractions;
 
 namespace EShopServiceIntegrationTests.Controllers;
@@ -34,8 +37,20 @@ public class ProductControllerIntegrationTest : IClassFixture<WebApplicationFact
 
                     if (dbContextDescriptor != null) services.Remove(dbContextDescriptor);
 
+                    // Remove Redis services
+                    var redisMultiplexerDescriptor = services.SingleOrDefault(d =>
+                        d.ServiceType == typeof(IConnectionMultiplexer));
+                    if (redisMultiplexerDescriptor != null) services.Remove(redisMultiplexerDescriptor);
+
+                    var redisCacheServiceDescriptor = services.SingleOrDefault(d =>
+                        d.ServiceType == typeof(IRedisCacheService));
+                    if (redisCacheServiceDescriptor != null) services.Remove(redisCacheServiceDescriptor);
+
                     // Add in-memory database for testing
                     services.AddDbContext<DataContext>(options => { options.UseInMemoryDatabase("TestDB"); });
+
+                    // Add in-memory cache service for testing
+                    services.AddSingleton<IRedisCacheService, InMemoryCacheService>();
                 });
             });
 

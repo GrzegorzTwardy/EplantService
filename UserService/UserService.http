@@ -1,0 +1,68 @@
+#@UserService_HostAddress = http://localhost:5107
+@UserService_HostAddress = http://localhost:8081
+
+### client login
+
+POST {{UserService_HostAddress}}/api/Login
+accept: */*
+Content-Type: application/json
+
+{
+  "username": "kota",
+  "password": "kota"
+}
+
+> {%
+    client.global.set("client_token", response.body.token);
+%}
+
+### client login test 
+
+GET {{UserService_HostAddress}}/api/Login/Client
+accept: */*
+Authorization: Bearer {{client_token}}
+
+### Employee login
+
+POST {{UserService_HostAddress}}/api/Login
+accept: */*
+Content-Type: application/json
+
+{
+  "username": "ma",
+  "password": "ma"
+}
+
+> {%
+    client.global.set("employee_token", response.body.token);
+%}
+
+### employee login test
+
+GET {{UserService_HostAddress}}/api/Login/Employee
+accept: */*
+Authorization: Bearer {{employee_token}}
+
+### admin login
+
+POST {{UserService_HostAddress}}/api/Login
+accept: */*
+Content-Type: application/json
+
+{
+  "username": "ala",
+  "password": "ala"
+}
+
+> {%
+    client.global.set("admin_token", response.body.token);
+%}
+
+### admin login test
+
+GET {{UserService_HostAddress}}/api/Login/Admin
+accept: */*
+Authorization: Bearer {{admin_token}}
+
+###
+
