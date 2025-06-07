@@ -66,17 +66,6 @@ services:
     volumes:
       - redis:/data
 
-  pg-admin:
-    image:
-      dpage/pgadmin4:7.6
-    env_file: dockerconfig/pgadmin/pg-admin.env
-    restart: always
-    networks:
-      - eshop-network
-    ports:
-      - "8083:80"
-    volumes:
-      - pg-admin:/var/lib/pgadmin
 
 
 networks:
@@ -85,8 +74,6 @@ networks:
 
 volumes:
   postgres:
-    external: false
-  pg-admin:
     external: false
   redis:
     external: false

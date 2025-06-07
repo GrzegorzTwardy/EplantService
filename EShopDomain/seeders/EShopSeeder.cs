@@ -57,9 +57,9 @@ public class EShopSeeder : IEShopSeeder
     {
         var categories = new List<Category>
         {
-            new() { Name = "Electronics", CreatedBy = Guid.NewGuid(), UpdatedBy = Guid.NewGuid() },
-            new() { Name = "Clothing", CreatedBy = Guid.NewGuid(), UpdatedBy = Guid.NewGuid() },
-            new() { Name = "Books", CreatedBy = Guid.NewGuid(), UpdatedBy = Guid.NewGuid() }
+            new() { Name = "Indoor", CreatedBy = Guid.NewGuid(), UpdatedBy = Guid.NewGuid() },
+            new() { Name = "Outdoor", CreatedBy = Guid.NewGuid(), UpdatedBy = Guid.NewGuid() },
+            new() { Name = "IndoorAndOutdoor", CreatedBy = Guid.NewGuid(), UpdatedBy = Guid.NewGuid() }
         };
 
         _context.Categories.AddRange(categories);
@@ -67,48 +67,125 @@ public class EShopSeeder : IEShopSeeder
     }
 
     private void SeedProducts()
-    {
-        // Get the seeded categories
-        var categories = _context.Categories.ToList();
+	{
+		// Get the seeded categories
+		var categories = _context.Categories.ToList();
 
-        var products = new List<Product>
-        {
-            new()
-            {
-                Name = "Smartphone X1",
-                Ean = "5901234123457",
-                Price = 999.99m,
-                Stock = 50,
-                Sku = "SMRTX1",
-                CategoryId = categories[0].Id,
-                CreatedBy = Guid.NewGuid(),
-                UpdatedBy = Guid.NewGuid()
-            },
-            new()
-            {
-                Name = "T-Shirt",
-                Ean = "5901234123458",
-                Price = 29.99m,
-                Stock = 100,
-                Sku = "TSHRT1",
-                CategoryId = categories[1].Id,
-                CreatedBy = Guid.NewGuid(),
-                UpdatedBy = Guid.NewGuid()
-            },
-            new()
-            {
-                Name = "Programming Book",
-                Ean = "5901234123459",
-                Price = 49.99m,
-                Stock = 30,
-                Sku = "BOOK1",
-                CategoryId = categories[2].Id,
-                CreatedBy = Guid.NewGuid(),
-                UpdatedBy = Guid.NewGuid()
-            }
-        };
+		var products = new List<Product>
+		{
+			new()
+			{
+				Name = "Fikus Benjamina",
+				Ean = "5901234123460",
+				Price = 29.99m,
+				Stock = 40,
+				Sku = "FB",
+				CategoryId = categories[0].Id, // Indoor
+				CreatedBy = Guid.NewGuid(),
+				UpdatedBy = Guid.NewGuid()
+			},
+			new()
+			{
+				Name = "Lawenda",
+				Ean = "5901234123461",
+				Price = 22.50m,
+				Stock = 60,
+				Sku = "LW",
+				CategoryId = categories[1].Id, // Outdoor
+				CreatedBy = Guid.NewGuid(),
+				UpdatedBy = Guid.NewGuid()
+			},
+			new()
+			{
+				Name = "Aloes",
+				Ean = "5901234123462",
+				Price = 18.75m,
+				Stock = 70,
+				Sku = "AL",
+				CategoryId = categories[2].Id, // IndoorAndOutdoor
+				CreatedBy = Guid.NewGuid(),
+				UpdatedBy = Guid.NewGuid()
+			},
+			new()
+			{
+				Name = "Monstera Deliciosa",
+				Ean = "5901234123463",
+				Price = 55.00m,
+				Stock = 25,
+				Sku = "MD",
+				CategoryId = categories[0].Id, // Indoor
+				CreatedBy = Guid.NewGuid(),
+				UpdatedBy = Guid.NewGuid()
+			},
+			new()
+			{
+				Name = "Hortensja",
+				Ean = "5901234123464",
+				Price = 35.99m,
+				Stock = 45,
+				Sku = "HT",
+				CategoryId = categories[1].Id, // Outdoor
+				CreatedBy = Guid.NewGuid(),
+				UpdatedBy = Guid.NewGuid()
+			},
+			new()
+			{
+				Name = "Begonia",
+				Ean = "5901234123465",
+				Price = 27.30m,
+				Stock = 55,
+				Sku = "BG",
+				CategoryId = categories[2].Id, // IndoorAndOutdoor
+				CreatedBy = Guid.NewGuid(),
+				UpdatedBy = Guid.NewGuid()
+			},
+			new()
+			{
+				Name = "Sansewieria",
+				Ean = "5901234123466",
+				Price = 40.00m,
+				Stock = 50,
+				Sku = "SW",
+				CategoryId = categories[0].Id, // Indoor
+				CreatedBy = Guid.NewGuid(),
+				UpdatedBy = Guid.NewGuid()
+			},
+			new()
+			{
+				Name = "Róża ogrodowa",
+				Ean = "5901234123467",
+				Price = 33.99m,
+				Stock = 70,
+				Sku = "RO",
+				CategoryId = categories[1].Id, // Outdoor
+				CreatedBy = Guid.NewGuid(),
+				UpdatedBy = Guid.NewGuid()
+			},
+			new()
+			{
+				Name = "Bluszcz pospolity",
+				Ean = "5901234123468",
+				Price = 24.50m,
+				Stock = 60,
+				Sku = "BP",
+				CategoryId = categories[2].Id, // IndoorAndOutdoor
+				CreatedBy = Guid.NewGuid(),
+				UpdatedBy = Guid.NewGuid()
+			},
+			new()
+			{
+				Name = "Paprotka zwyczajna",
+				Ean = "5901234123469",
+				Price = 20.00m,
+				Stock = 80,
+				Sku = "PZ",
+				CategoryId = categories[0].Id, // Indoor
+				CreatedBy = Guid.NewGuid(),
+				UpdatedBy = Guid.NewGuid()
+			}
+		};
 
-        _context.Products.AddRange(products);
-        _context.SaveChanges();
-    }
+		_context.Products.AddRange(products);
+		_context.SaveChanges();
+	}
 }
