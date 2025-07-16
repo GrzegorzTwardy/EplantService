@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using UserApplication;
 using UserDomain.Models;
 using UserDomain.repositories;
@@ -17,7 +18,37 @@ public class Program
         // Add services to the container.
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "EplantService API", Version = "v1" });
+
+            // Definicja schematu "Bearer"
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Wprowadz token w formacie: Bearer {twoj_token}"
+            });
+
+            // Wymaganie zabezpieczenia dla ka¿dego endpointa
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+        });
 
         // Register repositories
         builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -25,6 +56,7 @@ public class Program
         // Register services
         builder.Services.AddControllers();
 
+        builder.Services.AddScoped<IRegisterService, RegisterService>();
         builder.Services.AddScoped<ILoginService, LoginService>();
         builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
