@@ -20,7 +20,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "EplantService API", Version = "v1" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "UserService", Version = "v1" });
 
             // Definicja schematu "Bearer"
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -30,7 +30,7 @@ public class Program
                 Scheme = "Bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = "Wprowadz token w formacie: Bearer {twoj_token}"
+                Description = "Wprowadz token: "
             });
 
             // Wymaganie zabezpieczenia dla ka¿dego endpointa

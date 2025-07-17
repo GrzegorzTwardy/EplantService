@@ -1,5 +1,6 @@
 ﻿using EShopApplication;
 using EShopDomain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EShopService.Controllers;
@@ -17,6 +18,7 @@ public class ProductController : ControllerBase
 
     // GET: api/Product
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IEnumerable<Product>> GetAllAsync()
     {
         return await _productService.GetAllProductsAsync();
@@ -24,6 +26,7 @@ public class ProductController : ControllerBase
 
     // GET api/Product/5
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<ActionResult<Product>> GetAsync(int id)
     {
         var product = await _productService.GetProductByIdAsync(id);
@@ -33,6 +36,7 @@ public class ProductController : ControllerBase
 
     // POST api/Product
     [HttpPost]
+    [Authorize(Roles = "Admin,Employee")]
     public async Task<ActionResult<Product>> PostAsync([FromBody] Product product)
     {
         await _productService.CreateProductAsync(product);
@@ -41,6 +45,7 @@ public class ProductController : ControllerBase
 
     // PATCH api/Product
     [HttpPatch]
+    [Authorize(Roles = "Admin,Employee")]
     public ActionResult<Product> Add([FromBody] Product product)
     {
         _productService.Add(product);
@@ -49,6 +54,7 @@ public class ProductController : ControllerBase
 
     // PUT api/Product/5
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,Employee")]
     public async Task<IActionResult> PutAsync(int id, [FromBody] Product product)
     {
         product.Id = id;
@@ -58,6 +64,7 @@ public class ProductController : ControllerBase
 
     // DELETE api/Product/5
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin,Employee")]
     public async Task<IActionResult> DeleteAsync(int id)
     {
         await _productService.DeleteProductAsync(id);

@@ -81,8 +81,8 @@ public class ProductService : IProductService
         await _productRepository.UpdateAsync(product);
 
         // Invalidate cache after updating the product
-        _cacheService.InvalidateProductCacheAsync(product.Id);
-        _cacheService.InvalidateAllProductsCacheAsync();
+        await _cacheService.InvalidateProductCacheAsync(product.Id);
+        await _cacheService.InvalidateAllProductsCacheAsync();
 
         return true;
     }
@@ -95,8 +95,8 @@ public class ProductService : IProductService
         await _productRepository.DeleteAsync(id);
 
         // Invalidate cache after deleting the product
-        _cacheService.InvalidateProductCacheAsync(id);
-        _cacheService.InvalidateAllProductsCacheAsync();
+        await _cacheService.InvalidateProductCacheAsync(id);
+        await _cacheService.InvalidateAllProductsCacheAsync();
 
         return true;
     }

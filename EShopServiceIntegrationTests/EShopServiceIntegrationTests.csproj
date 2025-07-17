@@ -10,20 +10,21 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="coverlet.collector" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
-        <PackageReference Include="xunit" Version="2.5.3"/>
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3"/>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0"/>
+        <PackageReference Include="coverlet.collector" Version="6.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.16" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+        <PackageReference Include="xunit" Version="2.5.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="Xunit"/>
+        <Using Include="Xunit" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\EShopService\EShopService.csproj"/>
+        <ProjectReference Include="..\EShopService\EShopService.csproj" />
         <AssemblyAttribute Include="Xunit.CollectionBehaviorAttribute">
             <_Parameter1>DisableTestParallelization = true</_Parameter1>
             <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
